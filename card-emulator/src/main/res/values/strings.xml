@@ -1,0 +1,4 @@
+<resources>
+    <string name="service_desc">Student ID Service</string>
+    <string name="aid_desc">Student ID</string>
+</resources>
