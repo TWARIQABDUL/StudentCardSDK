@@ -5,7 +5,8 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {WalletEntity.class}, version = 1, exportSchema = false)
+// --- UPDATE VERSION TO 2 ---
+@Database(entities = {WalletEntity.class}, version = 2, exportSchema = false)
 public abstract class StudentDatabase extends RoomDatabase {
 
     public abstract WalletDao walletDao();
@@ -18,7 +19,7 @@ public abstract class StudentDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     StudentDatabase.class, "student_card_secure.db")
-                            // REMOVED: .allowMainThreadQueries() -> Now it is safe!
+                            // This wipes the old DB to prevent crashes during dev
                             .fallbackToDestructiveMigration()
                             .build();
                 }
