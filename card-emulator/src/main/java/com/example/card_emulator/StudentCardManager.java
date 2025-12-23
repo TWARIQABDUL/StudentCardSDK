@@ -19,28 +19,33 @@ public class StudentCardManager {
     // --- STATUS CODES ---
     public static final int STATUS_SUCCESS = 0;
     public static final int STATUS_DEVICE_ROOTED = 10;
-    public static final int STATUS_APP_TAMPERED = 11;
+    public static final int STATUS_APP_TAMPERED = 11; // 👈 We will use this now
 
     public static final int NFC_READY = 0;
     public static final int NFC_DISABLED = 1;
     public static final int NFC_MISSING = 2;
 
-    // --- 1. ACTIVATE (UPDATED) ---
+    // --- 1. ACTIVATE (SECURED) ---
     public static int activateCard(Context context, String token) {
-        // Basic security checks
+        // 1. Root Check (Hacked Phone?)
         if (SecurityUtils.isDeviceRooted()) return STATUS_DEVICE_ROOTED;
 
-        // Enable NFC Logic
+        // 2. Tamper Check (Modified APK?) 🔒 NEW
+        // This checks the JKS Signature we just added
+        if (!SecurityUtils.isCallerLegitimate(context)) return STATUS_APP_TAMPERED;
+
+        // 3. Enable NFC Logic
         CardSession.getInstance().setToken(token);
         return STATUS_SUCCESS;
     }
 
-    // --- 2. SAVE USER DATA (NEW METHOD) ---
-    // Called from Flutter after Login to cache data
+    // --- 2. SAVE USER DATA (SECURED) ---
     public static void saveUserData(Context context, String token, String name, String email,
                                     String role, double balance, String validUntil, boolean isActive) {
 
+        // Block saving data on compromised devices
         if (SecurityUtils.isDeviceRooted()) return;
+        if (!SecurityUtils.isCallerLegitimate(context)) return;
 
         dbExecutor.execute(() -> {
             WalletEntity user = new WalletEntity(token, name, email, role, balance, validUntil, isActive);
@@ -48,8 +53,7 @@ public class StudentCardManager {
         });
     }
 
-    // --- 3. GET CACHED USER (UPDATED) ---
-    // Returns the full WalletEntity so Flutter can show the dashboard offline
+    // --- 3. GET CACHED USER ---
     public interface UserCallback {
         void onUserLoaded(WalletEntity user);
         void onError(String msg);
@@ -66,7 +70,7 @@ public class StudentCardManager {
         });
     }
 
-    // ... Keep deactivateCard and getNfcStatus as they were ...
+    // --- 4. NFC UTILS ---
     public static void deactivateCard() {
         CardSession.getInstance().disable();
     }

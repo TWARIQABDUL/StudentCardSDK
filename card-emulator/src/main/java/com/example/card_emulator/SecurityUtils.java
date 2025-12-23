@@ -1,4 +1,4 @@
-package com.example.card_emulator;
+package com.example.card_emulator; // 👈 CORRECT PACKAGE for your SDK
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
@@ -34,13 +34,12 @@ public class SecurityUtils {
     }
 
     // 2. APP SIGNATURE VERIFICATION (Anti-Tamper)
-    // You must replace this with YOUR real Release Keystore SHA-256 hash.
-    // Run `keytool -list -v -keystore your-key.jks` to get it.
-    private static final String ALLOWED_SIGNATURE = "A1:B2:C3:D4:E5..."; // <--- REPLACE THIS
+    // 🔒 UPDATED: This is your specific SHA-256 key
+    private static final String ALLOWED_SIGNATURE = "BC:34:13:F4:34:60:73:E5:50:C4:A8:F2:17:99:E3:06:6C:9F:65:F9:23:8B:83:15:E6:A5:A3:CF:09:15:B4:84";
 
     public static boolean isCallerLegitimate(Context context) {
-        // In DEBUG mode, we skip this check so you can test easily.
-        // In RELEASE mode, this is critical.
+        // In DEBUG mode, we skip this check.
+        // In RELEASE mode, this blocks anyone who hasn't signed with your key.
         if (BuildConfig.DEBUG) return true;
 
         try {
@@ -49,7 +48,9 @@ public class SecurityUtils {
 
             for (Signature signature : packageInfo.signatures) {
                 String sha256 = getSHA256(signature.toByteArray());
-                if (ALLOWED_SIGNATURE.equals(sha256)) {
+
+                // 🔒 COMPARE
+                if (ALLOWED_SIGNATURE.equalsIgnoreCase(sha256)) {
                     return true;
                 }
             }
@@ -66,7 +67,7 @@ public class SecurityUtils {
         StringBuilder sb = new StringBuilder();
         for (byte b : hashText) {
             sb.append(String.format("%02X", b));
-            if (sb.length() < 64 + 31) sb.append(":"); // Add colons
+            if (sb.length() < 64 + 31) sb.append(":");
         }
         return sb.toString();
     }
